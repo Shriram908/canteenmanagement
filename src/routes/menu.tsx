@@ -13,6 +13,7 @@ export const Route = createFileRoute("/menu")({
   head: () => ({ meta: [
     { title: "Menu — Food Book" }, { name: "description", content: "Breakfast, thalis, breads, soups, chai and desserts from the campus canteen." },
     { property: "og:title", content: "Menu — Food Book" }, { property: "og:description", content: "Browse today's campus canteen menu." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: Menu,
 });

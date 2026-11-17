@@ -3,15 +3,19 @@ import { Trash2 } from "lucide-react";
 import { AppShell, useCartSummary } from "@/components/AppShell";
 import { formatINR } from "@/lib/menu-data";
 import { useCart } from "@/lib/cart";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: "Your cart — Food Book" }, { name: "description", content: "Review your canteen order." },
-    { property: "og:title", content: "Your cart — Food Book" }, { property: "og:description", content: "Review your canteen order." }] }),
+    { property: "og:title", content: "Your cart — Food Book" }, { property: "og:description", content: "Review your canteen order." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: Cart,
 });
 
 function Cart() {
-  const { setQty } = useCart();
+  const { setQty, syncError, syncing } = useCart();
+  const { user } = useAuth();
   const { lines, q } = useCartSummary();
   if (!lines.length) return <AppShell><div className="py-16 text-center"><h1 className="text-2xl font-bold">Your cart is empty</h1>
     <p className="mt-2 text-muted-foreground">Add something tasty from the menu.</p>
@@ -19,6 +23,8 @@ function Cart() {
   return (
     <AppShell>
       <h1 className="text-2xl font-bold">Your cart</h1>
+      {syncing && <p role="status" className="mt-2 text-sm text-muted-foreground">Loading your saved cart…</p>}
+      {syncError && <p role="alert" className="mt-2 text-sm text-destructive">{syncError}</p>}
       <div className="mt-4 grid gap-6 md:grid-cols-[1fr_340px]">
         <ul className="divide-y rounded-2xl bg-card shadow-card">
           {lines.map(({ dish, qty }) => (
@@ -38,8 +44,8 @@ function Cart() {
             <div className="flex justify-between text-muted-foreground"><dt>Taxes</dt><dd>Set by the canteen</dd></div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold"><dt>Estimated total</dt><dd>{formatINR(q.total)}</dd></div>
           </dl>
-          <button disabled className="mt-5 min-h-12 w-full rounded-full bg-primary font-semibold text-primary-foreground opacity-60">Checkout — coming soon</button>
-          <p className="mt-2 text-xs text-muted-foreground">Sign-in and Razorpay payments are the next step. They need the online database and your Razorpay test keys first.</p>
+          {user ? <Button disabled className="mt-5 min-h-12 w-full">Razorpay payment unavailable</Button> : <Button asChild className="mt-5 min-h-12 w-full"><Link to="/auth">Sign in to checkout</Link></Button>}
+          <p className="mt-2 text-xs text-muted-foreground">Razorpay Test mode isn't connected yet. No payment will be taken.</p>
         </aside>
       </div>
     </AppShell>

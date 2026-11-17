@@ -11,6 +11,7 @@ export const Route = createFileRoute("/")({
     { name: "description", content: "Order from your campus canteen and skip the queue. Pick up hot food when it's ready." },
     { property: "og:title", content: "Food Book — Campus canteen ordering" },
     { property: "og:description", content: "Order ahead from your campus canteen and pick up when ready." },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
   component: Home,
 });

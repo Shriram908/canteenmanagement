@@ -31,3 +31,7 @@ use the editor.
 
 - Money is integer paise everywhere; totals come from src/lib/pricing.ts (server must recompute before payment). Why: avoids float rounding and price tampering.
 - Menu data lives in src/lib/menu-data.ts until moved to the database. Why: single source for seed data.
+- Customer-private pages live under the client-only authenticated layout and customer functions use verified bearer middleware; route guards alone do not secure data.
+- Keep one root auth listener and clear Query caches before sign-out; this prevents cross-account private data reuse.
+- Guest carts use local storage, signed-in carts use owner-scoped Cloud rows, and merges use cart-rules.ts; this preserves the one-outlet and quantity invariants.
+- Order writes and payment state transitions are server-only; customers receive read-only order access to prevent price and payment tampering.
