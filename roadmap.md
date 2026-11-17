@@ -9,6 +9,7 @@
 - [x] Customer-access restrictions, catalog rendering, rule tests and deployment documentation
 - [ ] Provision and verify authorized staff workflows (blocked: no administrator account selected)
 - [ ] Complete customer-to-payment-to-kitchen journey (blocked: Razorpay connection and staff access)
+- [x] Check Cattle Wale's Razorpay connection approach (Standard Checkout and server verification; adapt to this app)
 - [ ] Razorpay test-mode payment as the final checkout step (test keys only; blocked: secure Razorpay connection)
 - [ ] Razorpay refunds and online reservations (blocked: Razorpay connection)
 - [ ] Optional delivery and outbound notifications (blocked: campus delivery zones and notification provider)
