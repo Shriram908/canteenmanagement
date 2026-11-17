@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Home, UtensilsCrossed, Receipt, User, ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
 import { outlets, dishes, isOutletOpen, formatINR } from "@/lib/menu-data";
@@ -23,6 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const outlet = outlets.find((o) => o.id === outletId)!;
   const open = isOutletOpen(outlet);
   const { q } = useCartSummary();
+  const onCart = useLocation({ select: (l) => l.pathname === "/cart" });
   return (
     <div className="min-h-screen pb-36 md:pb-10">
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
@@ -48,7 +49,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </p>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-5">{children}</main>
-      {q.items > 0 && (
+      {q.items > 0 && !onCart && (
         <Link to="/cart" className="fixed inset-x-3 bottom-20 z-30 flex min-h-14 items-center justify-between rounded-2xl bg-primary px-5 text-primary-foreground shadow-card md:bottom-6 md:left-auto md:right-6 md:w-80">
           <span className="flex items-center gap-2 font-semibold"><ShoppingBag className="h-5 w-5" />{q.items} item{q.items > 1 ? "s" : ""}</span>
           <span className="font-semibold">{formatINR(q.subtotal)} · View cart</span>
