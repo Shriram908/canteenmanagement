@@ -17,7 +17,9 @@ function Cart() {
   const { setQty, syncError, syncing } = useCart();
   const { user } = useAuth();
   const { lines, q } = useCartSummary();
+  if (syncing) return <AppShell><h1 className="text-2xl font-bold">Your cart</h1><p role="status" className="mt-4 text-muted-foreground">Loading your saved cart…</p></AppShell>;
   if (!lines.length) return <AppShell><div className="py-16 text-center"><h1 className="text-2xl font-bold">Your cart is empty</h1>
+    {syncError && <p role="alert" className="mt-2 text-sm text-destructive">{syncError}</p>}
     <p className="mt-2 text-muted-foreground">Add something tasty from the menu.</p>
     <Link to="/menu" className="mt-5 inline-flex min-h-12 items-center rounded-full bg-primary px-6 font-semibold text-primary-foreground">Browse menu</Link></div></AppShell>;
   return (
@@ -26,7 +28,7 @@ function Cart() {
       {syncing && <p role="status" className="mt-2 text-sm text-muted-foreground">Loading your saved cart…</p>}
       {syncError && <p role="alert" className="mt-2 text-sm text-destructive">{syncError}</p>}
       <div className="mt-4 grid gap-6 md:grid-cols-[1fr_340px]">
-        <ul className="divide-y rounded-2xl bg-card shadow-card">
+        <ul className="h-fit divide-y rounded-2xl bg-card shadow-card">
           {lines.map(({ dish, qty }) => (
             <li key={dish.id} className="flex items-center gap-3 p-4">
               <div className="min-w-0 flex-1"><p className="font-semibold">{dish.name}</p><p className="text-sm text-muted-foreground">{formatINR(dish.pricePaise)} each</p></div>

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/AppShell";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { mode?: "forgot" } => search["mode"] === "forgot" ? { mode: "forgot" } : {},
   head: () => ({ meta: [
     { title: "Sign in — Food Book" }, { name: "description", content: "Sign in to save your campus canteen cart and view orders." },
     { property: "og:title", content: "Sign in — Food Book" }, { property: "og:description", content: "Your campus meals and orders in one account." },
@@ -17,16 +18,17 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
+  const search = Route.useSearch();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">(search.mode ?? "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  useEffect(() => { if (user) void navigate({ to: "/profile", replace: true }); }, [user, navigate]);
+  useEffect(() => { if (user && mode !== "forgot") void navigate({ to: "/profile", replace: true }); }, [user, mode, navigate]);
 
   async function submit(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError(""); setMessage("");

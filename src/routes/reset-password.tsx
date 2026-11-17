@@ -32,6 +32,6 @@ function ResetPassword() {
       <label className="block text-sm">New password<input required type="password" minLength={8} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border bg-card px-3" /></label>
       <label className="block text-sm">Confirm password<input required type="password" minLength={8} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} className="mt-1 min-h-12 w-full rounded-lg border bg-card px-3" /></label>
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}<Button type="submit" disabled={busy} className="min-h-12 w-full">{busy ? "Saving…" : "Set new password"}</Button>
-    </form> : <><p className="mt-4 text-muted-foreground">Open the password reset link from your email. If it expired, request a new one.</p><Link to="/auth" className="mt-4 block text-primary underline">Request a reset link</Link></>}
+    </form> : <><p className="mt-4 text-muted-foreground">Open the password reset link from your email. If it expired, request a new one.</p><Link to="/auth" search={{ mode: "forgot" }} className="mt-4 block text-primary underline">Request a reset link</Link></>}
   </section></AppShell>;
 }
