@@ -31,6 +31,7 @@ use the editor.
 
 - Money is integer paise everywhere; totals come from src/lib/pricing.ts (server must recompute before payment). Why: avoids float rounding and price tampering.
 - The live catalog is read through catalog.functions.ts and shared by CatalogProvider; menu-data.ts holds image metadata and initial catalog reference only. Why: staff changes must reach every customer surface.
+- Meal photos resolve through meal-images.ts using normalized current dish names, with an honest placeholder for unknown names; never substitute category photos. Why: renamed and newly added meals must not display unrelated food.
 - Customer-private pages live under the client-only authenticated layout and customer functions use verified bearer middleware; route guards alone do not secure data.
 - Keep one root auth listener and clear Query caches before sign-out; this prevents cross-account private data reuse.
 - Guest carts use local storage, signed-in carts use owner-scoped Cloud rows, and merges use cart-rules.ts; this preserves the one-outlet and quantity invariants.

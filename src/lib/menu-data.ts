@@ -2,6 +2,8 @@ import breakfast from "@/assets/breakfast.jpg";
 import main from "@/assets/main.jpg";
 import beverages from "@/assets/beverages.jpg";
 import desserts from "@/assets/desserts.jpg";
+import chapatiPhoto from "@/assets/meals/chapati.jpg";
+import soupPhoto from "@/assets/meals/tomato-soup.jpg";
 
 export type Diet = "veg" | "vegan" | "nonveg" | "egg";
 export type CategoryId = "breakfast" | "main" | "breads" | "soups" | "beverages" | "desserts";
@@ -20,8 +22,8 @@ export const outlets: Outlet[] = [
 export const categories: { id: CategoryId; label: string; image: string }[] = [
   { id: "breakfast", label: "Breakfast", image: breakfast },
   { id: "main", label: "Main Course", image: main },
-  { id: "breads", label: "Breads/Chapatis", image: main },
-  { id: "soups", label: "Soups", image: main },
+  { id: "breads", label: "Breads/Chapatis", image: chapatiPhoto },
+  { id: "soups", label: "Soups", image: soupPhoto },
   { id: "beverages", label: "Beverages", image: beverages },
   { id: "desserts", label: "Desserts", image: desserts },
 ];

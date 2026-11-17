@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Trash2 } from "lucide-react";
 import { AppShell, useCartSummary } from "@/components/AppShell";
 import { formatINR } from "@/lib/menu-data";
+import { dishImage } from "@/lib/meal-images";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -31,6 +32,7 @@ function Cart() {
         <ul className="h-fit divide-y rounded-2xl bg-card shadow-card">
           {lines.map(({ dish, qty }) => (
             <li key={dish.id} className="flex items-center gap-3 p-4">
+              {dishImage(dish.name) && <img src={dishImage(dish.name)} alt={dish.name} width={512} height={512} loading="lazy" className="hidden h-16 w-16 shrink-0 rounded-lg object-cover sm:block" />}
               <div className="min-w-0 flex-1"><p className="font-semibold">{dish.name}</p><p className="text-sm text-muted-foreground">{formatINR(dish.pricePaise)} each</p></div>
               <label className="sr-only" htmlFor={`q-${dish.id}`}>Quantity</label>
               <select id={`q-${dish.id}`} value={qty} onChange={(e) => setQty(dish.id, +e.target.value)} className="min-h-11 rounded-lg border bg-background px-2">

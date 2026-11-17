@@ -1,5 +1,6 @@
-import { Minus, Plus, Clock } from "lucide-react";
-import { categoryImage, formatINR, type Dish } from "@/lib/menu-data";
+import { Minus, Plus, Clock, Utensils } from "lucide-react";
+import { formatINR, type Dish } from "@/lib/menu-data";
+import { dishImage } from "@/lib/meal-images";
 import { useCart, MAX_QTY } from "@/lib/cart";
 import { DietBadge } from "./DietBadge";
 
@@ -7,10 +8,12 @@ export function DishCard({ dish, disabled }: { dish: Dish; disabled?: boolean })
   const { items, add, setQty } = useCart();
   const q = items[dish.id] ?? 0;
   const off = !dish.available || disabled;
+  const photo = dishImage(dish.name);
   return (
     <article className="flex gap-3 rounded-2xl bg-card p-3 shadow-card sm:flex-col sm:p-0 sm:overflow-hidden">
-      <img src={categoryImage(dish.category)} alt="" loading="lazy" width={1024} height={768}
+      {photo ? <img src={photo} alt={dish.name} loading="lazy" width={512} height={512}
         className={`h-24 w-24 shrink-0 rounded-xl object-cover sm:h-auto sm:w-full sm:aspect-[4/3] sm:rounded-none ${!dish.available ? "grayscale" : ""}`} />
+        : <div role="img" aria-label={`Photo unavailable for ${dish.name}`} className="grid h-24 w-24 shrink-0 place-items-center rounded-xl bg-secondary text-muted-foreground sm:aspect-[4/3] sm:h-auto sm:w-full sm:rounded-none"><Utensils className="h-8 w-8" aria-hidden /></div>}
       <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:p-4 sm:pt-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <DietBadge diet={dish.diet} />
