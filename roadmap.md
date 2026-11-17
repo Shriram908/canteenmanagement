@@ -9,7 +9,8 @@
 - [x] Customer-access restrictions, catalog rendering, rule tests and deployment documentation
 - [ ] Provision and verify authorized staff workflows (blocked: no administrator account selected)
 - [ ] Complete customer-to-payment-to-kitchen journey (blocked: Razorpay connection and staff access)
-- [ ] Razorpay payments, refunds and online reservations (blocked: Razorpay credentials)
+- [ ] Razorpay test-mode payment as the final checkout step (test keys only; blocked: secure Razorpay connection)
+- [ ] Razorpay refunds and online reservations (blocked: Razorpay connection)
 - [ ] Optional delivery and outbound notifications (blocked: campus delivery zones and notification provider)
 - [x] Existing popular-menu baseline retained without AI claims
 - [x] Add owner-scoped and outlet-scoped real-time order updates with reconnect recovery and tests
