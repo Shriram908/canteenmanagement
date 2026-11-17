@@ -10,7 +10,7 @@ const CartCtx = createContext<Ctx | null>(null);
 const KEY = "foodbook-cart-v1";
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<CartState>({ outletId: outlets[0].id, items: {} });
+  const [state, setState] = useState<CartState>({ outletId: outlets[0]?.id ?? "main", items: {} });
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
     try { const s = localStorage.getItem(KEY); if (s) setState(JSON.parse(s)); } catch { /* ignore */ }
