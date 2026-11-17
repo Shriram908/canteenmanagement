@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { DishCard } from "@/components/DishCard";
-import { categories, dishes } from "@/lib/menu-data";
+import { categories } from "@/lib/menu-data";
+import { useCatalog } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import hero from "@/assets/main.jpg";
 
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { dishes } = useCatalog();
   const { outletId } = useCart();
   const popular = dishes.filter((d) => d.outletId === outletId && d.popular && d.available);
   return (

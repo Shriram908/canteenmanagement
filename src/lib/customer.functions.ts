@@ -42,7 +42,7 @@ export const getCustomerOrders = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ page: z.number().int().min(0).max(10000) }).parse(input))
   .handler(async ({ context, data }) => {
     const { data: orders, error } = await context.supabase.from("orders")
-      .select("id, outlet_id, status, payment_status, total_paise, created_at, order_items(dish_name, quantity, unit_price_paise)")
+      .select("id, outlet_id, status, payment_status, payment_method, notes, total_paise, created_at, order_items(dish_name, quantity, unit_price_paise)")
       .eq("user_id", context.userId).order("created_at", { ascending: false }).range(data.page * 20, data.page * 20 + 19);
     if (error) throw new Error("Your orders could not be loaded.");
     return orders;

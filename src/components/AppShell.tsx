@@ -1,7 +1,8 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, UtensilsCrossed, Receipt, User, ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
-import { outlets, dishes, isOutletOpen, formatINR } from "@/lib/menu-data";
+import { isOutletOpen, formatINR } from "@/lib/menu-data";
+import { useCatalog } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { quote } from "@/lib/pricing";
 import { useAuth } from "@/lib/auth";
@@ -14,19 +15,21 @@ const nav = [
 ] as const;
 
 export function useCartSummary() {
-  const { items } = useCart();
+  const { dishes, outlets } = useCatalog();
+  const { items, outletId } = useCart();
   const lines = Object.entries(items).flatMap(([id, qty]) => {
     const dish = dishes.find((d) => d.id === id);
     return dish ? [{ dish, qty }] : [];
   });
-  return { lines, q: quote(lines.map((l) => ({ pricePaise: l.dish.pricePaise, qty: l.qty }))) };
+  return { lines, q: quote(lines.map((l) => ({ pricePaise: l.dish.pricePaise, qty: l.qty })), outlets.find((o) => o.id === outletId)?.taxBasisPoints ?? 0) };
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const { outlets } = useCatalog();
   const { outletId, setOutlet, items } = useCart();
   const outlet = outlets.find((o) => o.id === outletId) ?? outlets[0];
   const { user, loading } = useAuth();
-  const open = outlet ? isOutletOpen(outlet) : false;
+  const open = outlet ? isOutletOpen(outlet) && outlet.acceptingOrders : false;
   const { q } = useCartSummary();
   const onCart = useLocation({ select: (l) => l.pathname === "/cart" });
   return (

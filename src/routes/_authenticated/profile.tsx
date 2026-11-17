@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { getCustomer, updateCustomer } from "@/lib/customer.functions";
+import { getStaffAccess } from "@/lib/staff.functions";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({ meta: [
@@ -14,11 +15,12 @@ export const Route = createFileRoute("/_authenticated/profile")({
     { property: "og:title", content: "Your profile — Food Book" }, { property: "og:description", content: "Your campus canteen account." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" },
   ] }),
-  loader: ({ context }) => context.queryClient.ensureQueryData({ queryKey: ["customer"], queryFn: () => getCustomer() }),
+  loader: ({ context }) => Promise.all([context.queryClient.ensureQueryData({ queryKey: ["customer"], queryFn: () => getCustomer() }), context.queryClient.ensureQueryData({ queryKey: ["staff-access"], queryFn: () => getStaffAccess() })]),
   component: Profile,
 });
 function Profile() {
   const { user } = useAuth();
+  const { data: access } = useSuspenseQuery({ queryKey: ["staff-access"], queryFn: () => getStaffAccess() });
   const { data } = useSuspenseQuery({ queryKey: ["customer"], queryFn: useServerFn(getCustomer) });
   const [name, setName] = useState(data.display_name);
   const [signingOut, setSigningOut] = useState(false);
@@ -42,5 +44,6 @@ function Profile() {
     </form>
     <div className="mt-8 flex flex-wrap gap-3 border-t pt-5"><Button asChild variant="outline" className="min-h-12"><Link to="/orders">Your orders</Link></Button><Button disabled={signingOut} onClick={() => void signOut()} variant="outline" className="min-h-12">{signingOut ? "Signing out…" : "Sign out"}</Button></div>
     {signOutError && <p role="alert" className="mt-3 text-sm text-destructive">{signOutError}</p>}
+    {access.kitchen && <div className="mt-5 flex flex-wrap gap-3"><Button asChild variant="secondary"><Link to="/kitchen">Kitchen queue</Link></Button>{access.admin && <Button asChild variant="secondary"><Link to="/admin">Administration</Link></Button>}</div>}
   </section></AppShell>;
 }

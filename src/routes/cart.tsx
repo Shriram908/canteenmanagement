@@ -36,18 +36,18 @@ function Cart() {
               <select id={`q-${dish.id}`} value={qty} onChange={(e) => setQty(dish.id, +e.target.value)} className="min-h-11 rounded-lg border bg-background px-2">
                 {Array.from({ length: 10 }, (_, i) => <option key={i + 1}>{i + 1}</option>)}</select>
               <span className="w-16 text-right font-semibold">{formatINR(dish.pricePaise * qty)}</span>
-              <button onClick={() => setQty(dish.id, 0)} aria-label={`Remove ${dish.name}`} className="grid h-11 w-11 place-items-center text-muted-foreground"><Trash2 className="h-4 w-4" /></button>
+              <Button variant="ghost" size="icon" onClick={() => setQty(dish.id, 0)} aria-label={`Remove ${dish.name}`}><Trash2 className="h-4 w-4" /></Button>
             </li>))}
         </ul>
         <aside className="h-fit rounded-2xl bg-card p-5 shadow-card">
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatINR(q.subtotal)}</dd></div>
             <div className="flex justify-between"><dt>Packaging</dt><dd>{formatINR(q.packaging)}</dd></div>
-            <div className="flex justify-between text-muted-foreground"><dt>Taxes</dt><dd>Set by the canteen</dd></div>
+            <div className="flex justify-between text-muted-foreground"><dt>Taxes</dt><dd>{formatINR(q.tax)}</dd></div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold"><dt>Estimated total</dt><dd>{formatINR(q.total)}</dd></div>
           </dl>
-          {user ? <Button disabled className="mt-5 min-h-12 w-full">Razorpay payment unavailable</Button> : <Button asChild className="mt-5 min-h-12 w-full"><Link to="/auth">Sign in to checkout</Link></Button>}
-          <p className="mt-2 text-xs text-muted-foreground">Razorpay Test mode isn't connected yet. No payment will be taken.</p>
+          {user ? <Button asChild className="mt-5 min-h-12 w-full"><Link to="/checkout">Review checkout</Link></Button> : <Button asChild className="mt-5 min-h-12 w-full"><Link to="/auth">Sign in to checkout</Link></Button>}
+          <p className="mt-2 text-xs text-muted-foreground">Online payments only. Razorpay is not connected yet.</p>
         </aside>
       </div>
     </AppShell>

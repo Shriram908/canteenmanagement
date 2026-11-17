@@ -4,7 +4,8 @@ import { useState } from "react";
 import { z } from "zod";
 import { AppShell } from "@/components/AppShell";
 import { DishCard } from "@/components/DishCard";
-import { categories, dishes, type CategoryId } from "@/lib/menu-data";
+import { categories, type CategoryId } from "@/lib/menu-data";
+import { useCatalog } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 
 const ids = categories.map((c) => c.id) as [CategoryId, ...CategoryId[]];
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/menu")({
 });
 
 function Menu() {
+  const { dishes } = useCatalog();
   const { category } = Route.useSearch();
   const nav = useNavigate({ from: "/menu" });
   const { outletId } = useCart();

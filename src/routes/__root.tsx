@@ -16,6 +16,7 @@ import { AuthProvider } from "@/lib/auth";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "../lib/cart";
+import { CatalogProvider, catalogOptions } from "@/lib/catalog";
 
 function NotFoundComponent() {
   return (
@@ -78,6 +79,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: ({ context }) => context.queryClient.ensureQueryData(catalogOptions),
   head: () => ({
     // Replace these placeholders with the app's name and description when first building the app.
     // Each content route, / included, must still set its own head(). Never add og:image or
@@ -156,7 +158,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AuthProvider value={{ user, loading }}>
-        <CartProvider><Outlet /></CartProvider>
+        <CatalogProvider><CartProvider><Outlet /></CartProvider></CatalogProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

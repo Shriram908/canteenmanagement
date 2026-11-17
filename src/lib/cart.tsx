@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { outlets, dishes } from "./menu-data";
+import { useCatalog } from "./catalog";
 import { cartInput, mergeCarts, MAX_QTY, type CartState } from "./cart-rules";
 import { getSavedCart, saveCart } from "./customer.functions";
 import { useAuth } from "./auth";
@@ -15,6 +15,7 @@ const CartCtx = createContext<Ctx | null>(null);
 const KEY = "foodbook-cart-v1";
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { outlets, dishes } = useCatalog();
   const [state, setState] = useState<CartState>({ outletId: "main", items: {} });
   const [loaded, setLoaded] = useState(false);
   const { user, loading } = useAuth();
@@ -71,7 +72,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const setQty = (id: string, q: number) => setState((s) => {
     const dish = dishes.find((d) => d.id === id);
-    if (!Number.isFinite(q) || !dish || dish.outletId !== s.outletId || (q > 0 && !dish.available)) return s;
+    if (!Number.isFinite(q) || !dish || dish.outletId !== s.outletId || (q > (s.items[id] ?? 0) && !dish.available)) return s;
     const items = { ...s.items };
     const n = Math.max(0, Math.min(MAX_QTY, Math.floor(q)));
     if (n === 0) delete items[id]; else items[id] = n;

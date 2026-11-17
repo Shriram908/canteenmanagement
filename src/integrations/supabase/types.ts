@@ -35,6 +35,94 @@ export type Database = {
         }
         Relationships: []
       }
+      dishes: {
+        Row: {
+          allergens: string[] | null
+          available: boolean
+          category: string
+          description: string
+          diet: string
+          id: string
+          name: string
+          outlet_id: string
+          popular: boolean
+          prep_mins: number
+          price_paise: number
+          spice: number
+          stock: number
+        }
+        Insert: {
+          allergens?: string[] | null
+          available?: boolean
+          category: string
+          description?: string
+          diet: string
+          id: string
+          name: string
+          outlet_id: string
+          popular?: boolean
+          prep_mins?: number
+          price_paise: number
+          spice?: number
+          stock?: number
+        }
+        Update: {
+          allergens?: string[] | null
+          available?: boolean
+          category?: string
+          description?: string
+          diet?: string
+          id?: string
+          name?: string
+          outlet_id?: string
+          popular?: boolean
+          prep_mins?: number
+          price_paise?: number
+          spice?: number
+          stock?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dishes_outlet_id_fkey"
+            columns: ["outlet_id"]
+            isOneToOne: false
+            referencedRelation: "outlets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_events: {
+        Row: {
+          actor_id: string
+          created_at: string
+          event: string
+          id: string
+          order_id: string
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          event: string
+          id?: string
+          order_id: string
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          event?: string
+          id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           dish_id: string
@@ -76,8 +164,10 @@ export type Database = {
           fulfillment: string
           id: string
           idempotency_key: string
+          notes: string
           outlet_id: string
           packaging_paise: number
+          payment_method: string
           payment_status: string
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
@@ -85,6 +175,7 @@ export type Database = {
           subtotal_paise: number
           tax_paise: number
           total_paise: number
+          updated_at: string
           user_id: string
         }
         Insert: {
@@ -92,8 +183,10 @@ export type Database = {
           fulfillment?: string
           id?: string
           idempotency_key: string
+          notes?: string
           outlet_id: string
           packaging_paise: number
+          payment_method?: string
           payment_status?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
@@ -101,6 +194,7 @@ export type Database = {
           subtotal_paise: number
           tax_paise?: number
           total_paise: number
+          updated_at?: string
           user_id: string
         }
         Update: {
@@ -108,8 +202,10 @@ export type Database = {
           fulfillment?: string
           id?: string
           idempotency_key?: string
+          notes?: string
           outlet_id?: string
           packaging_paise?: number
+          payment_method?: string
           payment_status?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
@@ -117,7 +213,41 @@ export type Database = {
           subtotal_paise?: number
           tax_paise?: number
           total_paise?: number
+          updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      outlets: {
+        Row: {
+          accepting_orders: boolean
+          closes: string
+          counter_payments: boolean
+          id: string
+          location: string
+          name: string
+          opens: string
+          tax_basis_points: number
+        }
+        Insert: {
+          accepting_orders?: boolean
+          closes: string
+          counter_payments?: boolean
+          id: string
+          location: string
+          name: string
+          opens: string
+          tax_basis_points?: number
+        }
+        Update: {
+          accepting_orders?: boolean
+          closes?: string
+          counter_payments?: boolean
+          id?: string
+          location?: string
+          name?: string
+          opens?: string
+          tax_basis_points?: number
         }
         Relationships: []
       }
@@ -139,15 +269,59 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      change_order: {
+        Args: { p_action: string; p_order: string; p_user: string }
+        Returns: undefined
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      place_counter_order: {
+        Args: {
+          p_items: Json
+          p_key: string
+          p_notes: string
+          p_outlet: string
+          p_packaging: number
+          p_total: number
+          p_user: string
+        }
+        Returns: string
+      }
+      sales_summary: {
+        Args: { p_from: string; p_outlet: string; p_to: string }
+        Returns: Json
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "kitchen"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -274,6 +448,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "kitchen"],
+    },
   },
 } as const

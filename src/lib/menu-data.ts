@@ -70,12 +70,12 @@ export const dishes: Dish[] = outlets.flatMap((o) =>
     available: o.id === "hostel" && i % 9 === 4 ? false : x.available })),
 );
 
-export const categoryImage = (c: CategoryId) => categories.find((x) => x.id === c)!.image;
+export const categoryImage = (c: CategoryId) => categories.find((x) => x.id === c)?.image ?? main;
 export const formatINR = (paise: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(paise / 100);
 
 /** Open/closed in Asia/Kolkata. */
 export function isOutletOpen(o: Outlet, now = new Date()) {
   const t = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false }).format(now);
-  return t >= o.opens && t < o.closes;
+  return o.opens < o.closes ? t >= o.opens && t < o.closes : t >= o.opens || t < o.closes;
 }

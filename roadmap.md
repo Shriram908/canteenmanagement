@@ -3,6 +3,12 @@
 - [x] Turn on Lovable Cloud
 - [x] Customer database, accounts, profile editing, cart merge and saved cart
 - [x] Private order-history read page and setup documentation
-- [ ] Checkout, reservations, Razorpay test mode (blocked: Razorpay test keys)
-- [ ] Orders, kitchen dashboard, admin, refunds, reports
-- [ ] Recommendations, notifications, docs
+- [x] Database-backed catalog, stock and outlet settings
+- [x] Checkout review, customer order polling and guarded cancellation
+- [x] Protected kitchen and administration pages, menu editing, outlet settings and sales reports
+- [x] Customer-access restrictions, catalog rendering, rule tests and deployment documentation
+- [ ] Provision and verify authorized staff workflows (blocked: no administrator account selected)
+- [ ] Complete customer-to-payment-to-kitchen journey (blocked: Razorpay connection and staff access)
+- [ ] Razorpay payments, refunds and online reservations (blocked: Razorpay credentials)
+- [ ] Optional delivery and outbound notifications (blocked: campus delivery zones and notification provider)
+- [x] Existing popular-menu baseline retained without AI claims

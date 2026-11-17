@@ -1,0 +1,2 @@
+CREATE FUNCTION public.require_paid_fulfillment() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.status IN ('confirmed','preparing','ready','completed') AND NEW.payment_status<>'paid' THEN RAISE EXCEPTION 'Online payment must be confirmed before fulfillment'; END IF; RETURN NEW; END $$;
+CREATE TRIGGER paid_fulfillment BEFORE INSERT OR UPDATE ON public.orders FOR EACH ROW EXECUTE FUNCTION public.require_paid_fulfillment();
