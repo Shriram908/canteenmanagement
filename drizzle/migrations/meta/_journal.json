@@ -36,6 +36,13 @@
       "when": 1794940219570,
       "tag": "0004_require_paid_orders_in_kitchen",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794941524500,
+      "tag": "0005_enable_orders_realtime",
+      "breakpoints": true
     }
   ]
 }

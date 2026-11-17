@@ -9,8 +9,10 @@ import { Button } from "./ui/button";
 import type { z } from "zod";
 import type { orderActionInput } from "@/lib/order-rules";
 import { SalesSummary } from "./SalesSummary";
+import { useOrderRealtime } from "@/hooks/use-order-realtime";
 
 export function StaffOrders({ outlet, active }: { outlet: "main" | "hostel"; active: boolean }) {
+  useOrderRealtime(outlet);
   const [page, setPage] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");

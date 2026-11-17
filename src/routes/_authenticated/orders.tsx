@@ -8,6 +8,7 @@ import { getCustomerOrders } from "@/lib/customer.functions";
 import { formatINR, outlets } from "@/lib/menu-data";
 import { cancelOrder } from "@/lib/orders.functions";
 import { canCancel } from "@/lib/order-rules";
+import { useOrderRealtime } from "@/hooks/use-order-realtime";
 
 export const Route = createFileRoute("/_authenticated/orders")({
   head: () => ({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/orders")({
   component: Orders,
 });
 function Orders() {
+  useOrderRealtime();
   const [page, setPage] = useState(0);
   const fetchOrders = useServerFn(getCustomerOrders);
   const client = useQueryClient();

@@ -12,3 +12,4 @@
 - [ ] Razorpay payments, refunds and online reservations (blocked: Razorpay credentials)
 - [ ] Optional delivery and outbound notifications (blocked: campus delivery zones and notification provider)
 - [x] Existing popular-menu baseline retained without AI claims
+- [x] Add owner-scoped and outlet-scoped real-time order updates with reconnect recovery and tests
