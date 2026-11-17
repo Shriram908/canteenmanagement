@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Money is integer paise everywhere; totals come from src/lib/pricing.ts (server must recompute before payment). Why: avoids float rounding and price tampering.
+- Menu data lives in src/lib/menu-data.ts until moved to the database. Why: single source for seed data.
