@@ -43,6 +43,13 @@
       "when": 1794941524500,
       "tag": "0005_enable_orders_realtime",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794979722637,
+      "tag": "0006_razorpay_test_checkout",
+      "breakpoints": true
     }
   ]
 }

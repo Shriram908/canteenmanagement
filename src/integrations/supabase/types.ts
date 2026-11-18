@@ -167,10 +167,13 @@ export type Database = {
           notes: string
           outlet_id: string
           packaging_paise: number
+          payment_creation_started: boolean
           payment_method: string
+          payment_mode: string
           payment_status: string
           razorpay_order_id: string | null
           razorpay_payment_id: string | null
+          reservation_expires_at: string | null
           status: string
           subtotal_paise: number
           tax_paise: number
@@ -186,10 +189,13 @@ export type Database = {
           notes?: string
           outlet_id: string
           packaging_paise: number
+          payment_creation_started?: boolean
           payment_method?: string
+          payment_mode?: string
           payment_status?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
+          reservation_expires_at?: string | null
           status?: string
           subtotal_paise: number
           tax_paise?: number
@@ -205,10 +211,13 @@ export type Database = {
           notes?: string
           outlet_id?: string
           packaging_paise?: number
+          payment_creation_started?: boolean
           payment_method?: string
+          payment_mode?: string
           payment_status?: string
           razorpay_order_id?: string | null
           razorpay_payment_id?: string | null
+          reservation_expires_at?: string | null
           status?: string
           subtotal_paise?: number
           tax_paise?: number
@@ -296,6 +305,20 @@ export type Database = {
         Args: { p_action: string; p_order: string; p_user: string }
         Returns: undefined
       }
+      claim_test_payment: {
+        Args: { p_order: string; p_user: string }
+        Returns: boolean
+      }
+      confirm_test_payment: {
+        Args: {
+          p_amount: number
+          p_order: string
+          p_payment: string
+          p_provider_order: string
+          p_user: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -304,6 +327,18 @@ export type Database = {
         Returns: boolean
       }
       place_counter_order: {
+        Args: {
+          p_items: Json
+          p_key: string
+          p_notes: string
+          p_outlet: string
+          p_packaging: number
+          p_total: number
+          p_user: string
+        }
+        Returns: string
+      }
+      reserve_test_order: {
         Args: {
           p_items: Json
           p_key: string

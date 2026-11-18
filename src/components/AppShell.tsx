@@ -31,7 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const open = outlet ? isOutletOpen(outlet) && outlet.acceptingOrders : false;
   const { q } = useCartSummary();
-  const onCart = useLocation({ select: (l) => l.pathname === "/cart" });
+  const onCart = useLocation({ select: (l) => l.pathname === "/cart" || l.pathname === "/checkout" });
   return (
     <div className="min-h-screen pb-36 md:pb-10">
       <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">

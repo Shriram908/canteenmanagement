@@ -49,7 +49,7 @@ function Cart() {
             <div className="flex justify-between border-t pt-2 text-base font-semibold"><dt>Estimated total</dt><dd>{formatINR(q.total)}</dd></div>
           </dl>
           {user ? <Button asChild className="mt-5 min-h-12 w-full"><Link to="/checkout">Review checkout</Link></Button> : <Button asChild className="mt-5 min-h-12 w-full"><Link to="/auth">Sign in to checkout</Link></Button>}
-          <p className="mt-2 text-xs text-muted-foreground">Online payments only. Razorpay is not connected yet.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Razorpay test payments only. No real money is charged.</p>
         </aside>
       </div>
     </AppShell>

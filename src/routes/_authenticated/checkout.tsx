@@ -5,6 +5,11 @@ import { useCatalog } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import { formatINR, isOutletOpen } from "@/lib/menu-data";
 import { ShieldCheck, MapPin } from "lucide-react";
+import { useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
+import { startTestPayment, verifyTestPayment } from "@/lib/payments.functions";
+import { loadRazorpay, type RazorpaySuccess } from "@/lib/razorpay";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   head: () => ({
@@ -21,13 +26,47 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 });
 function Checkout() {
   const { lines, q } = useCartSummary();
-  const { outletId, syncing, syncError } = useCart();
+  const { outletId, items, syncing, syncError, clear } = useCart();
   const { outlets } = useCatalog();
   const outlet = outlets.find((o) => o.id === outletId);
+  const start = useServerFn(startTestPayment);
+  const verify = useServerFn(verifyTestPayment);
+  const client = useQueryClient();
+  const attempt = useRef<{ fingerprint: string; key: string } | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [pending, setPending] = useState<{ orderId: string; paymentId: string } | undefined>(undefined);
+  async function finish(orderId: string, paymentId: string) {
+    setBusy(true); setError("");
+    try {
+      await verify({ data: { orderId, paymentId } });
+      setPending(undefined); clear(); setSuccess(true);
+      await Promise.all([client.invalidateQueries({ queryKey: ["orders"] }), client.invalidateQueries({ queryKey: ["catalog"] })]);
+    } catch (failure) { setPending({ orderId, paymentId }); setError(failure instanceof Error ? failure.message : "Payment verification failed. Do not pay again."); }
+    finally { setBusy(false); }
+  }
+  async function pay() {
+    if (busy) return;
+    setBusy(true); setError("");
+    try {
+      await loadRazorpay();
+      const fingerprint = JSON.stringify({ outletId, items, total: q.total });
+      if (attempt.current?.fingerprint !== fingerprint) attempt.current = { fingerprint, key: crypto.randomUUID() };
+      const current = attempt.current;
+      if (!current) return;
+      const payment = await start({ data: { cart: { outletId, items }, expectedTotal: q.total, idempotencyKey: current.key, notes: "" } });
+      const Razorpay = window.Razorpay;
+      if (!Razorpay) throw new Error("Razorpay could not load.");
+      const checkout = new Razorpay({ key: payment.keyId, order_id: payment.providerOrderId, amount: payment.amount, currency: "INR", name: "Food Book", description: "Campus pickup · Test payment", handler: (result: RazorpaySuccess) => { void finish(payment.orderId, result.razorpay_payment_id); }, modal: { ondismiss: () => { setBusy(false); setError("Payment was not completed. Your cart is unchanged."); } } });
+      checkout.on("payment.failed", () => { setBusy(false); setError("Test payment failed. Retry or check your orders."); });
+      checkout.open();
+    } catch (failure) { setError(failure instanceof Error ? failure.message : "Payment could not start."); setBusy(false); }
+  }
   return (
     <AppShell>
       <h1 className="text-3xl font-bold">Checkout</h1>
-      {syncing ? (
+      {success ? <div className="mt-6"><p role="status" className="font-semibold text-veg">Test payment verified. Your pickup order is confirmed.</p><Button asChild className="mt-4"><Link to="/orders">View your order</Link></Button></div> : syncing ? (
         <p role="status" className="mt-4">
           Loading your saved cart…
         </p>
@@ -95,14 +134,14 @@ function Checkout() {
                 <dd>{formatINR(q.total)}</dd>
               </div>
             </dl>
-            <Button disabled className="mt-5 min-h-12 w-full">
+            <Button disabled={busy || !!syncError || (!pending && (!outlet?.acceptingOrders || !isOutletOpen(outlet) || lines.some(({dish}) => !dish.available)))} onClick={() => pending ? void finish(pending.orderId, pending.paymentId) : void pay()} className="mt-5 min-h-12 w-full">
               <ShieldCheck />
-              Online payment unavailable
+              {busy ? "Processing…" : pending ? "Recheck payment" : `Pay ${formatINR(q.total)} · Test`}
             </Button>
             <p role="status" className="mt-3 text-sm text-muted-foreground">
-              Razorpay has not been connected. No order or charge will be created. Counter payments
-              are not accepted.
+              Razorpay test mode only. No real money is charged. Counter payments are not accepted.
             </p>
+            {error && <p role="alert" className="mt-3 text-sm text-destructive">{error}</p>}
           </aside>
         </div>
       )}
