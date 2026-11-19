@@ -42,6 +42,7 @@ export function StaffOrders({ outlet, active }: { outlet: "main" | "hostel"; act
         client.invalidateQueries({ queryKey: ["staff-orders"] }),
         client.invalidateQueries({ queryKey: ["orders"] }),
         client.invalidateQueries({ queryKey: ["catalog"] }),
+        client.invalidateQueries({ queryKey: ["sales"] }),
       ]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The order could not be updated.");
@@ -104,6 +105,8 @@ export function StaffOrders({ outlet, active }: { outlet: "main" | "hostel"; act
       )}
       {query.isPending ? (
         <p role="status">Loading orders…</p>
+      ) : query.isError ? (
+        <div className="border-y py-10 text-center"><p className="font-semibold">Orders are temporarily unavailable</p><Button variant="outline" className="mt-3" onClick={() => void query.refetch()}><RefreshCw />Retry</Button></div>
       ) : !orders.length ? (
         <div className="border-y py-16 text-center">
           <ChefEmpty />
@@ -147,14 +150,14 @@ export function StaffOrders({ outlet, active }: { outlet: "main" | "hostel"; act
                 )
                   .filter(([s]) => canTransition(o.status, s, o.payment_status))
                   .map(([s, label]) => (
-                    <Button key={s} disabled={busy === o.id} onClick={() => void action(o.id, s)}>
+                    <Button key={s} disabled={!!busy} onClick={() => void action(o.id, s)}>
                       {label}
                     </Button>
                   ))}
                 {canCancel(o.status, o.payment_status) && (
                   <Button
                     variant="outline"
-                    disabled={busy === o.id}
+                    disabled={!!busy}
                     onClick={() => void action(o.id, "cancelled")}
                   >
                     Cancel

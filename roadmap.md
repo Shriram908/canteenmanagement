@@ -1,4 +1,6 @@
 # Food Book roadmap
+- [ ] Improve administration navigation, menu editing, stock filters, settings and error handling
+- [ ] Grant the requesting user's approved account administrator access and verify signed-in admin changes
 - [x] Design, menu, filters, cart (one outlet per cart)
 - [x] Turn on Lovable Cloud
 - [x] Customer database, accounts, profile editing, cart merge and saved cart

@@ -7,13 +7,18 @@ import { saveDish, saveOutlet } from "@/lib/staff.functions";
 import { categories, formatINR } from "@/lib/menu-data";
 import { Button } from "./ui/button";
 import type { Tables } from "@/integrations/supabase/types";
-import { Plus, Pencil, X, Save } from "lucide-react";
+import { Plus, Pencil, Save, Search, Utensils } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { dishImage } from "@/lib/meal-images";
+import { dishInput, outletInput, stockStatus, type StockStatus } from "@/lib/admin-rules";
 
 const field = "mt-1 min-h-11 w-full rounded-md border bg-background px-3";
 export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
   const { data } = useSuspenseQuery(catalogOptions);
   const [draft, setDraft] = useState<Tables<"dishes"> | null>(null);
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [status, setStatus] = useState<StockStatus | "all">("all");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -44,7 +49,7 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
     setBusy(true);
     setError("");
     try {
-      await write({ data: draft });
+      await write({ data: dishInput.parse(draft) });
       await client.invalidateQueries({ queryKey: ["catalog"] });
       setDraft(null);
       setMessage("Dish saved.");
@@ -55,18 +60,33 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
     }
   }
   const dishes = data.dishes.filter(
-    (d) => d.outlet_id === outlet && d.name.toLowerCase().includes(search.toLowerCase()),
+    (d) => d.outlet_id === outlet && d.name.toLowerCase().includes(search.trim().toLowerCase())
+      && (category === "all" || d.category === category)
+      && (status === "all" || stockStatus(d) === status),
   );
   return (
     <section>
       <div className="mb-5 flex flex-wrap gap-3">
+        <div className="relative min-w-40 flex-1">
+        <Search aria-hidden className="absolute left-3 top-3.5 size-4 text-muted-foreground" />
         <input
           aria-label="Find a dish"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Find a dish…"
-          className="min-h-11 flex-1 rounded-md border bg-card px-3"
+          className="min-h-11 w-full rounded-md border bg-card pl-10 pr-3"
         />
+        </div>
+        <select aria-label="Filter category" value={category} onChange={(e) => setCategory(e.target.value)} className="min-h-11 max-w-full rounded-md border bg-card px-3 text-sm">
+          <option value="all">All categories</option>
+          {categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
+        <select aria-label="Filter stock status" value={status} onChange={(e) => setStatus(e.target.value as StockStatus | "all")} className="min-h-11 rounded-md border bg-card px-3 text-sm">
+          <option value="all">All statuses</option>
+          <option value="available">Available</option>
+          <option value="sold-out">Sold out</option>
+          <option value="unlisted">Unlisted</option>
+        </select>
         <Button onClick={add}>
           <Plus />
           Add dish
@@ -77,25 +97,17 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
           {message}
         </p>
       )}
-      {error && (
+      {error && !draft && (
         <p role="alert" className="mb-3 text-destructive">
           {error}
         </p>
       )}
+      <Dialog open={!!draft} onOpenChange={(open) => { if (!open && !busy) setDraft(null); }}>
       {draft && (
-        <form onSubmit={(e) => void submit(e)} className="mb-6 border-y py-6">
-          <div className="flex justify-between">
-            <h2 className="text-xl font-semibold">{draft.name || "New dish"}</h2>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="Close editor"
-              onClick={() => setDraft(null)}
-            >
-              <X />
-            </Button>
-          </div>
+        <DialogContent aria-describedby={undefined} className="max-h-[90dvh] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-lg">
+        <DialogHeader><DialogTitle>{draft.name || "New dish"}</DialogTitle></DialogHeader>
+        <form onSubmit={(e) => void submit(e)}>
+        <fieldset disabled={busy}>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <label className="text-sm">
               Name
@@ -129,6 +141,7 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
                 type="number"
                 min="0"
                 max="100000"
+                step="1"
                 className={field}
                 value={draft.stock}
                 onChange={(e) => setDraft({ ...draft, stock: Number(e.target.value) })}
@@ -167,6 +180,7 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
                 type="number"
                 min="1"
                 max="180"
+                step="1"
                 className={field}
                 value={draft.prep_mins}
                 onChange={(e) => setDraft({ ...draft, prep_mins: Number(e.target.value) })}
@@ -230,12 +244,20 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
               </label>
             </div>
           </div>
-          <Button disabled={busy} type="submit" className="mt-5">
+          {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
+          <div className="mt-5 flex justify-end gap-2">
+          <Button variant="outline" type="button" onClick={() => setDraft(null)}>Cancel</Button>
+          <Button disabled={busy} type="submit">
             <Save />
             {busy ? "Saving…" : "Save dish"}
           </Button>
+          </div>
+        </fieldset>
         </form>
+        </DialogContent>
       )}
+      </Dialog>
+      <p className="mb-3 text-xs text-muted-foreground">{dishes.length} dishes</p>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="border-b text-muted-foreground">
@@ -252,11 +274,16 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
           <tbody>
             {dishes.map((d) => (
               <tr key={d.id} className="border-b">
-                <td className="min-w-36 py-4 font-medium">{d.name}</td>
+                <td className="min-w-44 py-4">
+                  <div className="flex items-center gap-3">
+                    {dishImage(d.name) ? <img src={dishImage(d.name)} alt={d.name} className="size-12 shrink-0 rounded-md object-cover" loading="lazy" /> : <span className="grid size-12 shrink-0 place-items-center rounded-md bg-muted"><Utensils className="size-5 text-muted-foreground" /></span>}
+                    <div><span className="font-medium">{d.name}</span><p className="mt-1 text-xs text-muted-foreground">{categories.find((c) => c.id === d.category)?.label}</p></div>
+                  </div>
+                </td>
                 <td className="whitespace-nowrap px-3">{formatINR(d.price_paise)}</td>
                 <td className="px-3">{d.stock}</td>
-                <td className="whitespace-nowrap px-3 text-muted-foreground">
-                  {d.available && d.stock > 0 ? "Available" : "Sold out"}
+                <td className={`whitespace-nowrap px-3 ${stockStatus(d) === "available" ? "text-veg" : "text-muted-foreground"}`}>
+                  {stockStatus(d) === "available" ? "Available" : stockStatus(d) === "unlisted" ? "Unlisted" : "Sold out"}
                 </td>
                 <td>
                   <Button
@@ -267,7 +294,6 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
                       setDraft(d);
                       setMessage("");
                       setError("");
-                      window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                   >
                     <Pencil />
@@ -278,6 +304,7 @@ export function CatalogEditor({ outlet }: { outlet: "main" | "hostel" }) {
           </tbody>
         </table>
       </div>
+      {!dishes.length && <div className="border-b py-12 text-center"><Search className="mx-auto size-6 text-muted-foreground" /><p className="mt-3 font-medium">No matching dishes</p><Button variant="ghost" className="mt-2" onClick={() => { setSearch(""); setCategory("all"); setStatus("all"); }}>Clear filters</Button></div>}
     </section>
   );
 }
@@ -299,7 +326,7 @@ export function OutletEditor({ outlet }: { outlet: "main" | "hostel" }) {
     setSaved(false);
     setError("");
     try {
-      await write({ data: { ...draft, id: outlet, counter_payments: false } });
+      await write({ data: outletInput.parse({ ...draft, id: outlet, counter_payments: false }) });
       await client.invalidateQueries({ queryKey: ["catalog"] });
       setSaved(true);
     } catch (e) {
@@ -309,7 +336,8 @@ export function OutletEditor({ outlet }: { outlet: "main" | "hostel" }) {
     }
   }
   return (
-    <form onSubmit={(e) => void submit(e)} className="max-w-2xl space-y-5">
+    <form onSubmit={(e) => void submit(e)} className="max-w-2xl">
+      <fieldset disabled={busy} onChange={() => setSaved(false)} className="space-y-5">
       <h2 className="text-xl font-semibold">Outlet settings</h2>
       <label className="block text-sm">
         Name
@@ -377,12 +405,13 @@ export function OutletEditor({ outlet }: { outlet: "main" | "hostel" }) {
         Accept orders during opening hours
       </label>
       <p className="text-sm text-muted-foreground">
-        Online payments only · Razorpay connection pending
+        Online payments only · Razorpay test mode
       </p>
       <Button disabled={busy} type="submit">
         <Save />
         {busy ? "Saving…" : "Save settings"}
       </Button>
+      </fieldset>
       {saved && (
         <p role="status" className="text-veg">
           Settings saved.

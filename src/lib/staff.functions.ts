@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { orderActionInput } from "./order-rules";
+import { dishInput, outletInput, salesInput } from "./admin-rules";
 
 export const getStaffAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -19,17 +20,13 @@ export const getStaffAccess = createServerFn({ method: "GET" })
 
 export const getSalesSummary = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z
-      .object({
-        outlet: z.enum(["main", "hostel"]),
-        from: z.string().datetime(),
-        to: z.string().datetime(),
-      })
-      .strict()
-      .parse(input),
-  )
+  .inputValidator((input: unknown) => salesInput.parse(input))
   .handler(async ({ context, data }) => {
+    const { data: allowed, error: accessError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (accessError || !allowed) throw new Error("Administrator access required.");
     const { data: summary, error } = await context.supabase.rpc("sales_summary", {
       p_outlet: data.outlet,
       p_from: data.from,
@@ -59,11 +56,12 @@ export const getStaffOrders = createServerFn({ method: "GET" })
       .parse(input),
   )
   .handler(async ({ context, data }) => {
-    const { data: roles } = await context.supabase
+    const { data: roles, error: accessError } = await context.supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId);
-    if (!roles?.length) throw new Error("Staff access required.");
+    if (accessError || !roles?.some((r) => r.role === "admin" || r.role === "kitchen"))
+      throw new Error("Staff access required.");
     let query = context.supabase
       .from("orders")
       .select("*,order_items(*),order_events(*)", { count: "exact" })
@@ -85,11 +83,12 @@ export const updateOrder = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => orderActionInput.parse(input))
   .handler(async ({ context, data }) => {
     if (data.action === "paid") throw new Error("Online payments require provider verification.");
-    const { data: roles } = await context.supabase
+    const { data: roles, error: accessError } = await context.supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", context.userId);
-    if (!roles?.length) throw new Error("Staff access required.");
+    if (accessError || !roles?.some((r) => r.role === "admin" || r.role === "kitchen"))
+      throw new Error("Staff access required.");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("change_order", {
       p_user: context.userId,
@@ -101,23 +100,6 @@ export const updateOrder = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const dishInput = z
-  .object({
-    id: z.string().min(1).max(100),
-    outlet_id: z.enum(["main", "hostel"]),
-    name: z.string().trim().min(1).max(100),
-    description: z.string().trim().max(500),
-    category: z.enum(["breakfast", "main", "breads", "soups", "beverages", "desserts"]),
-    price_paise: z.number().int().min(1).max(1000000),
-    diet: z.enum(["veg", "vegan", "nonveg", "egg"]),
-    spice: z.number().int().min(0).max(3),
-    prep_mins: z.number().int().min(1).max(180),
-    allergens: z.array(z.string().trim().min(1).max(80)).max(20).nullable(),
-    available: z.boolean(),
-    popular: z.boolean(),
-    stock: z.number().int().min(0).max(100000),
-  })
-  .strict();
 export const saveDish = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => dishInput.parse(input))
@@ -135,21 +117,7 @@ export const saveDish = createServerFn({ method: "POST" })
 
 export const saveOutlet = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z
-      .object({
-        id: z.enum(["main", "hostel"]),
-        name: z.string().trim().min(1).max(100),
-        location: z.string().trim().min(1).max(200),
-        opens: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
-        closes: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
-        accepting_orders: z.boolean(),
-        counter_payments: z.boolean(),
-        tax_basis_points: z.number().int().min(0).max(10000),
-      })
-      .strict()
-      .parse(input),
-  )
+  .inputValidator((input: unknown) => outletInput.parse(input))
   .handler(async ({ context, data }) => {
     const { data: allowed } = await context.supabase.rpc("has_role", {
       _user_id: context.userId,
@@ -159,7 +127,7 @@ export const saveOutlet = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { id, ...values } = data;
     if (values.counter_payments) throw new Error("This application accepts online payments only.");
-    const { error } = await supabaseAdmin.from("outlets").update(values).eq("id", id);
-    if (error) throw new Error("Outlet settings could not be saved.");
+    const { data: saved, error } = await supabaseAdmin.from("outlets").update(values).eq("id", id).select("id").single();
+    if (error || !saved) throw new Error("Outlet settings could not be saved.");
     return { ok: true };
   });

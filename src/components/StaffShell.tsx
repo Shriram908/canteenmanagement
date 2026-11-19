@@ -6,11 +6,11 @@ import { Button } from "./ui/button";
 
 export function StaffShell({ children, admin }: { children: ReactNode; admin?: boolean }) {
   return (
-    <AppShell>
+    <AppShell staff>
       <div className="mb-6 flex flex-wrap items-center gap-3 border-b pb-4">
         <ChefHat className="h-6 w-6 text-primary" />
         <span className="font-display text-xl font-semibold">Food Book · Staff</span>
-        <nav className="flex flex-wrap gap-2 md:ml-auto">
+        <nav aria-label="Staff navigation" className="flex flex-wrap gap-2 md:ml-auto">
           <Button asChild variant="outline">
             <Link to="/kitchen">
               <ChefHat />
@@ -40,7 +40,7 @@ export function StaffShell({ children, admin }: { children: ReactNode; admin?: b
 
 export function AccessDenied() {
   return (
-    <AppShell>
+    <AppShell staff>
       <h1 className="text-2xl font-bold">Staff access required</h1>
       <p className="mt-3 text-muted-foreground">
         Your account has not been assigned access to this area.

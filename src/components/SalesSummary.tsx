@@ -62,6 +62,7 @@ export function SalesSummary({ outlet }: { outlet: "main" | "hostel" }) {
           {query.error.message}
         </p>
       )}
+      {query.isPending && <p role="status" className="text-sm text-muted-foreground">Loading sales totals…</p>}
       {query.data && (
         <dl className="grid grid-cols-2 gap-5 md:grid-cols-5">
           {[
